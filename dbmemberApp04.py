@@ -15,8 +15,8 @@ class MainWindow(QMainWindow, form_class):
         self.setWindowTitle("회원조회 프로그램")
         
         self.search_btn.clicked.connect(self.db_search)#조회 버튼 누르면 db 서치 함수 호출
-        self.modify_btn.connect(self.db_modify)#조회 버튼 누르면 db 모디파이 함수 호출
-        self.reset_btn.connect(self.db_modify)  # 조회 버튼 누르면 db 모디파이 함수 호출
+        self.modify_btn.clicked.connect(self.db_modify) #조회 버튼 누르면 db 모디파이 함수 호출
+        self.reset_btn.clicked.connect(self.reset)  # 조회 버튼 누르면 db 모디파이 함수 호출
 
         #db서치 함수만들기
     def db_search(self):
@@ -30,6 +30,9 @@ class MainWindow(QMainWindow, form_class):
 
         result = cur.fetchone()
         #print(result)
+        cur.close()
+        conn.close()
+
         if result != None:
             self.memberpw_edit.setText(result[1])
             self.name_edit.setText(result[2])
@@ -45,27 +48,29 @@ class MainWindow(QMainWindow, form_class):
 
         #db모디파이 함수만들기
 
-        def db_modify(self):
-            memberid = self.memberid_edit.text()  # 회원아이디로 입력된 아이디 텍스트 가져오기
-            memberpw = self.memberpw_edit.text() # 회원비밀번호로 입력된 아이디 텍스트 가져오기
-            name = self.name_edit.text()
-            phone = self.phone_edit.text()
-            address = self.address_edit.text()
-            age = self.age_edit.text()
+    def db_modify(self):
+        memberid = self.memberid_edit.text()  # 회원아이디로 입력된 아이디 텍스트 가져오기
+        memberpw = self.memberpw_edit.text() # 회원비밀번호로 입력된 아이디 텍스트 가져오기
+        name = self.name_edit.text()
+        phone = self.phone_edit.text()
+        address = self.address_edit.text()
+        age = self.age_edit.text()
 
-            conn = pymysql.connect(host='localhost', user='root', password='12345', db='memberdb')
+        conn = pymysql.connect(host='localhost', user='root', password='12345', db='memberdb')
 
-            sql=(f"UPDATE member SET memberpw='{memberpw}',name='{name}',"
-                 f"phone='{phone}',adress='{address}',memberage={age} WHERE memberid='{memberid}")
+        sql = (f"UPDATE member SET memberpw='{memberpw}',name='{name}',phone='{phone}',"
+                   f"address='{address}',memberage='{age}' WHERE memberid='{memberid}'")
 
-            cur = conn.cursor()  # 커서 생성
-            cur.execute(sql)  # sql 실행
-            result = cur.fetchone()
+        cur = conn.cursor()  # 커서 생성
+        cur.execute(sql)  # SQL문 실행
 
-            cur.close()  # 작성 하지 않아도 에러는 나지 않지만, db과부하 날수 있음
-            conn.close()
+        cur.close()
+        conn.commit()
+        conn.close()
 
-        def reset(self):
+        self.db_search()  # 다시 데이터 갱신
+
+    def reset(self):
             self.memberpw_edit.clear()
             self.name_edit.clear()
             self.phone_edit.clear()
